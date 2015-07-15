@@ -46,20 +46,20 @@ public:
 
 		pilot = new GamepadF310(0);
 		sound_out = new DigitalOutput(SOUND_PIN);
+		sound_out->Set(0);
+	}
+
+	void setSound(DigitalOutput *out, bool state) {
+		out->Set(!state);
 	}
 
 	void DisabledInit() {}
-	void DisabledPeriodic() {}
-
-	void AutonomousInit()
+	void DisabledPeriodic()
 	{
-
+		setSound(sound_out, false);
 	}
-
-	void AutonomousPeriodic()
-	{
-
-	}
+	void AutonomousInit() {}
+	void AutonomousPeriodic() {}
 
 	void TeleopInit()
 	{
@@ -69,24 +69,29 @@ public:
 
 	void TeleopPeriodic()
 	{
-		static int tick = 0;
-		tick++;
-		SmartDashboard::PutNumber("tick", tick);
+		static Timer sound_timer;
+		static GamepadF310::ButtonEvent evt;
         float x = pilot->LeftX();
         float y = pilot->LeftY();
         float rot = pilot->RightX();
 
         drive->MecanumDrive_Cartesian(x,y,rot);
 
-        SmartDashboard::PutBoolean("a button", pilot->Button(GamepadF310::A_Button));
-		sound_out->Set(pilot->Button(GamepadF310::A_Button));
+        while (pilot->GetButtonEvent(&evt)) {
+        	if (evt.button == GamepadF310::buttonA && evt.pressed)
+        		sound_timer.Start();
+        }
+
+		setSound(sound_out, sound_timer.Get() > 0);
+        if (sound_timer.Get() > 0.1) {
+        	sound_timer.Stop();
+        	sound_timer.Reset();
+        }
 	}
 
 	void TestInit() {}
 
-	void TestPeriodic()
-	{
-	}
+	void TestPeriodic() {}
 };
 
 START_ROBOT_CLASS(Robot);

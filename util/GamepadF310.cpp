@@ -9,6 +9,7 @@
 
 GamepadF310::GamepadF310(int port) {
 	joystick = new Joystick(port);
+	button_state = std::vector<bool>(buttonMax + 1, false);
 }
 
 GamepadF310::~GamepadF310() {
@@ -69,23 +70,21 @@ float GamepadF310::DPadY() {
 }
 
 
-bool GamepadF310::Button(int buttonNum) {
+bool GamepadF310::ButtonState(int buttonNum) {
 	return joystick->GetRawButton(buttonNum);
 }
 
-bool GamepadF310::LeftBumper() {
-	return joystick->GetRawButton(5);
-}
-bool GamepadF310::RightBumper() {
-	return joystick->GetRawButton(6);
-}
-
-//the stick presses are actually just considered buttons
-bool GamepadF310::LeftStickPress() {
-	return joystick->GetRawButton(9);
-}
-bool GamepadF310::RightStickPress() {
-	return joystick->GetRawButton(10);
+bool GamepadF310::GetButtonEvent(ButtonEvent *e) {
+	for (int b = buttonMin; b <= buttonMax; b++) {
+		bool cur = ButtonState(b);
+		if (button_state[b] != cur) {
+			button_state[b] = cur;
+			e->pressed = cur;
+			e->button = b;
+			return true;
+		}
+	}
+	return false;
 }
 
 void GamepadF310::RightRumble(float rumbleness){
