@@ -1,15 +1,12 @@
 <xml version="1.0">
 <dashboard>
-	<widget field="ticks" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
-		<location x="5" y="33"/>
+	<widget field="tick" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="21"/>
 	</widget>
-	<widget field="sound dur" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
-		<location x="4" y="11"/>
+	<widget field="sound timer" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="0"/>
 	</widget>
 </dashboard>
 <live-window>
 </live-window>
-	<hidden field="string"/>
-	<hidden field="a button"/>
-	<hidden field="tick"/>
 </xml>
