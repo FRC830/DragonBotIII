@@ -24,7 +24,6 @@ private:
 
 	static const int SMOKE_MACHINE_RELAY = 1;
 
-	//Speeds
 	static constexpr float WING_FOLD_SPEED = 0.9;
 	static constexpr float WING_FLAP_SPEED = 0.5;
 
@@ -42,6 +41,9 @@ private:
 	Victor *head;
 	Victor *wing_flap;
 	Victor *wing_fold;
+
+	float eye_angle;
+	Servo *eye;
 
 public:
 	void RobotInit()
@@ -64,6 +66,9 @@ public:
 		head = new Victor(HEAD_MOTOR_PWM);
 		wing_flap = new Victor(WING_FLAP_PWM);
 		wing_fold = new Victor(WING_FOLD_PWM);
+
+		eye = new Servo(EYE_PWM);
+		eye_angle = 0;
 	}
 
 	void setSound(DigitalOutput *out, bool state) {
@@ -98,7 +103,45 @@ public:
         	wing_fold->Set(WING_FOLD_SPEED);
         } else if(copilot->ButtonState(GamepadF310::buttonBack)) {
         	wing_fold->Set( -WING_FOLD_SPEED );
+        } else {
+        	wing_fold->Set(0.0);
         }
+
+        if(copilot->ButtonState(GamepadF310::buttonB)){
+        	wing_flap->Set(WING_FLAP_SPEED);
+        } else {
+        	wing_flap->Set(0.0);
+        }
+
+        // left trigger/button control head and jaw
+        // right trigger/button control jaw only
+
+        bool left_down = copilot->LeftTrigger() > 0.5;
+        bool left_up = copilot->ButtonState(GamepadF310::buttonLeftBumper);
+        bool right_down = copilot->RightX() >= 0.5f;
+        bool right_up = copilot->ButtonState(GamepadF310::buttonRightBumper);
+
+        if ((int)left_down + (int)left_up + (int)right_down + (int)right_up != 1) {
+        	// either no buttons are pressed or multiple,
+        	// conflicting buttons are pressed
+        	jaw->Set(0);
+        	head->Set(0);
+        } else if (left_down) {
+        	jaw->Set(0.2);
+        	head->Set(-0.3);
+        } else if (left_up) {
+        	jaw->Set(-0.4);
+        	head->Set(0.5);
+        } else if (right_down){
+        	jaw->Set(0.4);
+        } else if (right_up){
+        	jaw->Set(-0.4);
+        }
+
+        if (copilot->ButtonState(GamepadF310::buttonA)) {
+        	eye_angle = ((1 - copilot->LeftX()) * 60) + 50;
+        }
+        eye->SetAngle(eye_angle);
 
 
         while (pilot->GetButtonEvent(&evt)) {
