@@ -24,8 +24,8 @@ private:
 
 	static const int SMOKE_MACHINE_RELAY = 1;
 
-	static constexpr float WING_FOLD_SPEED = 0.9;
-	static constexpr float WING_FLAP_SPEED = 0.5;
+	static constexpr float WING_FOLD_SPEED = 0.2;
+	static constexpr float WING_FLAP_SPEED = 0.4;
 
 	static const int SOUND_PIN = 2;
 	std::vector<int> sound_seq;
@@ -85,7 +85,6 @@ public:
 
 	void TeleopInit()
 	{
-		SmartDashboard::PutString("string", "this is a string");
 
 	}
 
