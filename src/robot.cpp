@@ -1,6 +1,5 @@
-/*
- * Redoing code for DragonBot
- * For Summer 2015 so it uses eclipse
+/* DragonBot 2015
+s *
  */
 
 #include "WPILib.h"
@@ -23,6 +22,12 @@ private:
 	static const int WING_FOLD_PWM = 9;
 
 	static const int SMOKE_MACHINE_RELAY = 1;
+	static const int MAX_EXCESS_SMOKE_TIME = 2;
+	static constexpr float SMOKE_CANNON_SPEED = 0.4f;
+	Victor *smoke_cannon;
+	DigitalOutput *smoke_machine;
+	Timer *smoke_make_timer;
+	Timer *smoke_fire_timer;
 
 	static constexpr float WING_FOLD_SPEED = 0.2;
 	static constexpr float WING_FLAP_SPEED = 0.4;
@@ -36,7 +41,6 @@ private:
 	GamepadF310 *pilot;
 	GamepadF310 *copilot;
 
-	Victor *smoke_cannon;
 	Victor *jaw;
 	Victor *head;
 	Victor *wing_flap;
@@ -62,6 +66,10 @@ public:
 		sound_out->Set(0);
 
 		smoke_cannon = new Victor(SMOKE_CANNON_PWM);
+		smoke_machine = new DigitalOutput(SMOKE_MACHINE_RELAY);
+		smoke_make_timer = new Timer();
+		smoke_fire_timer = new Timer();
+
 		jaw = new Victor(JAW_MOTOR_PWM);
 		head = new Victor(HEAD_MOTOR_PWM);
 		wing_flap = new Victor(WING_FLAP_PWM);
@@ -75,11 +83,19 @@ public:
 		out->Set(!state);
 	}
 
-	void DisabledInit() {}
+
+	void DisabledInit() {
+		smoke_make_timer->Stop();
+		smoke_fire_timer->Stop();
+		smoke_make_timer->Reset();
+		smoke_fire_timer->Reset();
+	}
+
 	void DisabledPeriodic()
 	{
 		setSound(sound_out, false);
 	}
+
 	void AutonomousInit() {}
 	void AutonomousPeriodic() {}
 
@@ -97,6 +113,17 @@ public:
         float rot = pilot->RightX();
 
         drive->MecanumDrive_Cartesian(x,y,rot);
+
+        while (pilot->GetButtonEvent(&evt)) {
+        	if (evt.button == GamepadF310::buttonA && evt.pressed)
+        		sound_timer.Start();
+        }
+
+		setSound(sound_out, sound_timer.Get() > 0);
+        if (sound_timer.Get() > 0.1) {
+        	sound_timer.Stop();
+        	sound_timer.Reset();
+        }
 
         if(copilot->ButtonState(GamepadF310::buttonStart)){
         	wing_fold->Set(WING_FOLD_SPEED);
@@ -142,17 +169,42 @@ public:
         }
         eye->SetAngle(eye_angle);
 
-
-        while (pilot->GetButtonEvent(&evt)) {
-        	if (evt.button == GamepadF310::buttonA && evt.pressed)
-        		sound_timer.Start();
+        if (copilot->ButtonState(GamepadF310::buttonX)) {
+        	// make smoke
+        	if (smoke_make_timer->Get() - smoke_fire_timer->Get() < MAX_EXCESS_SMOKE_TIME) {
+        		smoke_machine->Set(true);
+        		SmartDashboard::PutString("smoke machine", "active");
+        	} else {
+        		smoke_machine->Set(false);
+        		SmartDashboard::PutString("smoke machine", "maximum");
+        	}
+        }
+        else {
+        	SmartDashboard::PutString("smoke machine", "inactive");
         }
 
-		setSound(sound_out, sound_timer.Get() > 0);
-        if (sound_timer.Get() > 0.1) {
-        	sound_timer.Stop();
-        	sound_timer.Reset();
+        if (copilot->ButtonState(GamepadF310::buttonY)) {
+        	// shoot smoke
+        	smoke_cannon->Set(SMOKE_CANNON_SPEED);
+			if (smoke_make_timer->Get() > smoke_fire_timer->Get()){
+				//measure how long we've fired smoke, so we know if it's ok to make more
+				smoke_fire_timer->Start();
+	        	SmartDashboard::PutString("smoke cannon", "active");
+			} else {
+				smoke_fire_timer->Stop();
+	        	SmartDashboard::PutString("smoke cannon", "stopped");
+			}
+
+        } else {
+        	SmartDashboard::PutString("smoke cannon", "inactive");
         }
+
+		//if both timers are the same, we can set them both to zero to ensure we don't overflow them or something
+		if (smoke_make_timer->Get() == smoke_fire_timer->Get()){
+			smoke_make_timer->Reset();
+			smoke_fire_timer->Reset();
+		}
+
 	}
 
 	void TestInit() {}
