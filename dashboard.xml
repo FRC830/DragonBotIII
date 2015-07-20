@@ -1,12 +1,14 @@
 <xml version="1.0">
 <dashboard>
-	<widget field="tick" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
-		<location x="0" y="21"/>
+	<widget field="smoke cannon" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="172" y="6"/>
 	</widget>
-	<widget field="sound timer" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
-		<location x="0" y="0"/>
+	<widget field="smoke machine" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="4" y="7"/>
 	</widget>
 </dashboard>
 <live-window>
 </live-window>
+	<hidden field="tick"/>
+	<hidden field="sound timer"/>
 </xml>

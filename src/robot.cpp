@@ -180,6 +180,7 @@ public:
         	}
         }
         else {
+        	smoke_machine->Set(false);
         	SmartDashboard::PutString("smoke machine", "inactive");
         }
 
@@ -196,6 +197,7 @@ public:
 			}
 
         } else {
+            smoke_cannon->Set(0);
         	SmartDashboard::PutString("smoke cannon", "inactive");
         }
 
