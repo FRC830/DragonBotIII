@@ -178,10 +178,12 @@ public:
         		smoke_machine->Set(false);
         		SmartDashboard::PutString("smoke machine", "maximum");
         	}
+        	smoke_make_timer->Start();
         }
         else {
         	smoke_machine->Set(false);
         	SmartDashboard::PutString("smoke machine", "inactive");
+        	smoke_make_timer->Stop();
         }
 
         if (copilot->ButtonState(GamepadF310::buttonY)) {
