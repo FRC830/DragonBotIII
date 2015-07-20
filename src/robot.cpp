@@ -29,7 +29,7 @@ private:
 	Timer *smoke_make_timer;
 	Timer *smoke_fire_timer;
 
-	static constexpr float WING_FOLD_SPEED = 0.2;
+	static constexpr float WING_FOLD_SPEED = 0.8;
 	static constexpr float WING_FLAP_SPEED = 0.4;
 
 	static const int SOUND_PIN = 2;
