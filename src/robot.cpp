@@ -5,6 +5,13 @@ s *
 #include "WPILib.h"
 #include "../util/830utilities.h"
 
+struct sound_desc {const char *name; int pin;};
+static const sound_desc SOUNDS[] = {
+		{"roar", 1},
+		{"burp", 2}
+};
+
+
 class Robot: public IterativeRobot
 {
 private:
@@ -32,9 +39,8 @@ private:
 	static constexpr float WING_FOLD_SPEED = 0.8;
 	static constexpr float WING_FLAP_SPEED = 0.4;
 
-	static const int SOUND_PIN = 2;
-	std::vector<int> sound_seq;
-	DigitalOutput *sound_out;
+	std::map<const char*, DigitalOutput*> sound_outputs;
+	std::map<int /* button ID */, SendableChooser*> sound_choosers;
 
 	RobotDrive *drive;
 
@@ -62,8 +68,22 @@ public:
 		pilot = new GamepadF310(0);
 		copilot = new GamepadF310(1);
 
-		sound_out = new DigitalOutput(SOUND_PIN);
-		sound_out->Set(0);
+		int sound_pins = sizeof(SOUNDS) / sizeof(sound_desc);
+		for (int i = 0; i < sound_pins; i++) {
+			sound_outputs[SOUNDS[i].name] = new DigitalOutput(SOUNDS[i].pin);
+		}
+		sound_choosers[F310Buttons::A] = new SendableChooser();
+		sound_choosers[F310Buttons::B] = new SendableChooser();
+		for (auto it = sound_choosers.begin(); it != sound_choosers.end(); ++it) {
+			SendableChooser *c = it->second;
+			c->AddDefault("none", NULL);
+			for (auto out = sound_outputs.begin(); out != sound_outputs.end(); ++out) {
+				c->AddObject(out->first, out->second);
+			}
+		}
+		SmartDashboard::PutData("sound A", sound_choosers[F310Buttons::A]);
+		SmartDashboard::PutData("sound B", sound_choosers[F310Buttons::B]);
+
 
 		smoke_cannon = new Victor(SMOKE_CANNON_PWM);
 		smoke_machine = new DigitalOutput(SMOKE_MACHINE_RELAY);
@@ -93,7 +113,9 @@ public:
 
 	void DisabledPeriodic()
 	{
-		setSound(sound_out, false);
+		for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
+			it->second->Set(0);
+		}
 	}
 
 	void AutonomousInit() {}
@@ -106,34 +128,29 @@ public:
 
 	void TeleopPeriodic()
 	{
-		static Timer sound_timer;
-		static GamepadF310::ButtonEvent evt;
         float x = pilot->LeftX();
         float y = pilot->LeftY();
         float rot = pilot->RightX();
 
         drive->MecanumDrive_Cartesian(x,y,rot);
 
-        while (pilot->GetButtonEvent(&evt)) {
-        	if (evt.button == GamepadF310::buttonA && evt.pressed)
-        		sound_timer.Start();
+        for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
+        	int b = c->first;
+        	auto out = (DigitalOutput*)c->second->GetSelected();
+        	if (out){
+        		out->Set(pilot->ButtonState(b));
+        	}
         }
 
-		setSound(sound_out, sound_timer.Get() > 0);
-        if (sound_timer.Get() > 0.1) {
-        	sound_timer.Stop();
-        	sound_timer.Reset();
-        }
-
-        if(copilot->ButtonState(GamepadF310::buttonStart)){
+        if(copilot->ButtonState(F310Buttons::Start)){
         	wing_fold->Set(WING_FOLD_SPEED);
-        } else if(copilot->ButtonState(GamepadF310::buttonBack)) {
+        } else if(copilot->ButtonState(F310Buttons::Back)) {
         	wing_fold->Set( -WING_FOLD_SPEED );
         } else {
         	wing_fold->Set(0.0);
         }
 
-        if(copilot->ButtonState(GamepadF310::buttonB)){
+        if(copilot->ButtonState(F310Buttons::B)){
         	wing_flap->Set(WING_FLAP_SPEED);
         } else {
         	wing_flap->Set(0.0);
@@ -143,9 +160,9 @@ public:
         // right trigger/button control jaw only
 
         bool left_down = copilot->LeftTrigger() > 0.5;
-        bool left_up = copilot->ButtonState(GamepadF310::buttonLeftBumper);
+        bool left_up = copilot->ButtonState(F310Buttons::LeftBumper);
         bool right_down = copilot->RightX() >= 0.5f;
-        bool right_up = copilot->ButtonState(GamepadF310::buttonRightBumper);
+        bool right_up = copilot->ButtonState(F310Buttons::RightBumper);
 
         if ((int)left_down + (int)left_up + (int)right_down + (int)right_up != 1) {
         	// either no buttons are pressed or multiple,
@@ -164,12 +181,12 @@ public:
         	jaw->Set(-0.4);
         }
 
-        if (copilot->ButtonState(GamepadF310::buttonA)) {
+        if (copilot->ButtonState(F310Buttons::A)) {
         	eye_angle = ((1 - copilot->LeftX()) * 60) + 50;
         }
         eye->SetAngle(eye_angle);
 
-        if (copilot->ButtonState(GamepadF310::buttonX)) {
+        if (copilot->ButtonState(F310Buttons::X)) {
         	// make smoke
         	if (smoke_make_timer->Get() - smoke_fire_timer->Get() < MAX_EXCESS_SMOKE_TIME) {
         		smoke_machine->Set(true);
@@ -186,7 +203,7 @@ public:
         	smoke_make_timer->Stop();
         }
 
-        if (copilot->ButtonState(GamepadF310::buttonY)) {
+        if (copilot->ButtonState(F310Buttons::Y)) {
         	// shoot smoke
         	smoke_cannon->Set(SMOKE_CANNON_SPEED);
 			if (smoke_make_timer->Get() > smoke_fire_timer->Get()){
