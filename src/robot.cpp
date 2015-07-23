@@ -191,7 +191,7 @@ public:
 
         bool left_down = copilot->LeftTrigger() > 0.5;
         bool left_up = copilot->ButtonState(F310Buttons::LeftBumper);
-        bool right_down = copilot->RightX() >= 0.5f;
+        bool right_down = copilot->RightTrigger() >= 0.5f;
         bool right_up = copilot->ButtonState(F310Buttons::RightBumper);
 
         if ((int)left_down + (int)left_up + (int)right_down + (int)right_up != 1) {
