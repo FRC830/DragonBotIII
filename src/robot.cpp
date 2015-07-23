@@ -17,7 +17,11 @@ static const sound_desc SOUNDS[] = {
 		{"engine", 1},
 		{"roar", 2},
 		{"growl", 3},
-		{"fart", 4}
+		{"sheep", 4},
+		{"fart", 5},
+		{"laser", 6},
+		{"elevator", 7},
+		{"cat", 8}
 };
 
 
