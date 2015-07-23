@@ -5,10 +5,19 @@ s *
 #include "WPILib.h"
 #include "../util/830utilities.h"
 
+template <typename T>
+T clamp(T x, T min, T max) {
+	if (x < min) return min;
+	else if (x > max) return max;
+	else return x;
+}
+
 struct sound_desc {const char *name; int pin;};
 static const sound_desc SOUNDS[] = {
-		{"roar", 1},
-		{"burp", 2}
+		{"engine", 1},
+		{"roar", 2},
+		{"growl", 3},
+		{"fart", 4}
 };
 
 
@@ -28,7 +37,7 @@ private:
 	static const int WING_FLAP_PWM = 8;
 	static const int WING_FOLD_PWM = 9;
 
-	static const int SMOKE_MACHINE_RELAY = 1;
+	static const int SMOKE_MACHINE_DIO = 9;
 	static const int MAX_EXCESS_SMOKE_TIME = 2;
 	static constexpr float SMOKE_CANNON_SPEED = 0.4f;
 	Victor *smoke_cannon;
@@ -38,6 +47,8 @@ private:
 
 	static constexpr float WING_FOLD_SPEED = 0.8;
 	static constexpr float WING_FLAP_SPEED = 0.4;
+	static constexpr float WING_FLAP_ACCEL = 0.01;
+	float wing_speed;
 
 	std::map<const char*, DigitalOutput*> sound_outputs;
 	std::map<int /* button ID */, SendableChooser*> sound_choosers;
@@ -72,21 +83,24 @@ public:
 		for (int i = 0; i < sound_pins; i++) {
 			sound_outputs[SOUNDS[i].name] = new DigitalOutput(SOUNDS[i].pin);
 		}
+
 		sound_choosers[F310Buttons::A] = new SendableChooser();
 		sound_choosers[F310Buttons::B] = new SendableChooser();
+
 		for (auto it = sound_choosers.begin(); it != sound_choosers.end(); ++it) {
 			SendableChooser *c = it->second;
-			c->AddDefault("none", NULL);
+			c->AddDefault(" none", NULL);
 			for (auto out = sound_outputs.begin(); out != sound_outputs.end(); ++out) {
 				c->AddObject(out->first, out->second);
 			}
 		}
+
 		SmartDashboard::PutData("sound A", sound_choosers[F310Buttons::A]);
 		SmartDashboard::PutData("sound B", sound_choosers[F310Buttons::B]);
 
 
 		smoke_cannon = new Victor(SMOKE_CANNON_PWM);
-		smoke_machine = new DigitalOutput(SMOKE_MACHINE_RELAY);
+		smoke_machine = new DigitalOutput(SMOKE_MACHINE_DIO);
 		smoke_make_timer = new Timer();
 		smoke_fire_timer = new Timer();
 
@@ -94,6 +108,7 @@ public:
 		head = new Victor(HEAD_MOTOR_PWM);
 		wing_flap = new Victor(WING_FLAP_PWM);
 		wing_fold = new Victor(WING_FOLD_PWM);
+		wing_speed = 0;
 
 		eye = new Servo(EYE_PWM);
 		eye_angle = 0;
@@ -114,7 +129,7 @@ public:
 	void DisabledPeriodic()
 	{
 		for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
-			it->second->Set(0);
+			setSound(it->second, false);
 		}
 	}
 
@@ -134,11 +149,20 @@ public:
 
         drive->MecanumDrive_Cartesian(x,y,rot);
 
+        for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
+        	setSound(it->second, false);
+        }
         for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
-        	int b = c->first;
+        	bool pressed = pilot->ButtonState(c->first);
         	auto out = (DigitalOutput*)c->second->GetSelected();
         	if (out){
-        		out->Set(pilot->ButtonState(b));
+        		setSound(out, pressed);
+        		// Ensure that this sound is triggered if *any* buttons corresponding
+        		// to this sound are pressed. Without this, if buttons that are
+        		// checked later are not pressed and correspond to the same sound,
+        		// the sound will not be played.
+        		if (pressed)
+        			break;
         	}
         }
 
@@ -150,11 +174,11 @@ public:
         	wing_fold->Set(0.0);
         }
 
-        if(copilot->ButtonState(F310Buttons::B)){
-        	wing_flap->Set(WING_FLAP_SPEED);
-        } else {
-        	wing_flap->Set(0.0);
-        }
+        wing_flap->Set(clamp<float>(
+        		wing_speed + (WING_FLAP_ACCEL * (copilot->ButtonState(F310Buttons::B) ? 1 : -1)),
+        		0.0,
+				WING_FLAP_SPEED
+		));
 
         // left trigger/button control head and jaw
         // right trigger/button control jaw only
