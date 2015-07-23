@@ -75,6 +75,8 @@ public:
 				new Victor(FRONT_RIGHT_PWM),
 				new Victor(BACK_RIGHT_PWM)
 		);
+		drive->SetInvertedMotor(RobotDrive::kFrontRightMotor, true);
+		drive->SetInvertedMotor(RobotDrive::kRearRightMotor, true);
 
 		pilot = new GamepadF310(0);
 		copilot = new GamepadF310(1);
