@@ -150,10 +150,10 @@ public:
 	void TeleopPeriodic()
 	{
         float x = pilot->LeftX();
-        float y = pilot->LeftY();
+        float y = -pilot->LeftY();
         float rot = pilot->RightX();
 
-        drive->MecanumDrive_Cartesian(x,y,rot);
+        drive->MecanumDrive_Cartesian(x/2,y/2,rot/2);
 
         for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
         	setSound(it->second, false);
@@ -180,11 +180,13 @@ public:
         	wing_fold->Set(0.0);
         }
 
-        wing_flap->Set(clamp<float>(
+
+        wing_speed = clamp<float>(
         		wing_speed + (WING_FLAP_ACCEL * (copilot->ButtonState(F310Buttons::B) ? 1 : -1)),
         		0.0,
 				WING_FLAP_SPEED
-		));
+		);
+        wing_flap->Set(wing_speed);
 
         // left trigger/button control head and jaw
         // right trigger/button control jaw only
