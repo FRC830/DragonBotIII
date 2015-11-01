@@ -1,18 +1,86 @@
 <xml version="1.0">
 <dashboard>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="59" y="282"/>
+		<property name="Text" value="constant sheep"/>
+	</static-widget>
+	<widget field="constant sheep" type="Boolean" class="edu.wpi.first.smartdashboard.gui.elements.CheckBox">
+		<location x="35" y="278"/>
+	</widget>
+	<widget field="smoke cannon" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="174" y="11"/>
+	</widget>
+	<widget field="smoke machine" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="11" y="11"/>
+		<height>20</height>
+	</widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.VideoStreamViewerExtension">
+		<location x="424" y="7"/>
+		<width>604</width>
+		<height>428</height>
+	</static-widget>
 	<widget field="sound B" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
-		<location x="102" y="46"/>
+		<location x="102" y="42"/>
 	</widget>
 	<widget field="sound A" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
 		<location x="18" y="43"/>
 	</widget>
-	<widget field="smoke cannon" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
-		<location x="172" y="6"/>
-	</widget>
-	<widget field="smoke machine" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
-		<location x="4" y="7"/>
-	</widget>
 </dashboard>
 <live-window>
+	<widget field="Ungrouped" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
+		<widget field="Servo[0]" type="Servo" class="edu.wpi.first.smartdashboard.livewindow.elements.ServoController">
+			<location x="6" y="16"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[8]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="62"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[1]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="108"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[5]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="154"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[3]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="200"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[6]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="246"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[7]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="292"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[9]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="338"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[4]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="384"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="Victor[2]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="430"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<location x="0" y="0"/>
+		<width>305</width>
+		<height>483</height>
+	</widget>
 </live-window>
 </xml>

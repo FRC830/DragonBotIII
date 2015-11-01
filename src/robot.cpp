@@ -54,7 +54,7 @@ private:
 	static constexpr float WING_FLAP_ACCEL = 0.01;
 	float wing_speed;
 
-	std::map<const char*, DigitalOutput*> sound_outputs;
+	std::map<std::string, DigitalOutput*> sound_outputs;
 	std::map<int /* button ID */, SendableChooser*> sound_choosers;
 
 	RobotDrive *drive;
@@ -97,7 +97,7 @@ public:
 			SendableChooser *c = it->second;
 			c->AddDefault(" none", NULL);
 			for (auto out = sound_outputs.begin(); out != sound_outputs.end(); ++out) {
-				c->AddObject(out->first, out->second);
+				c->AddObject(out->first.c_str(), out->second);
 			}
 		}
 
@@ -144,7 +144,7 @@ public:
 
 	void TeleopInit()
 	{
-
+		SmartDashboard::PutBoolean("constant sheep", false);
 	}
 
 	void TeleopPeriodic()
@@ -171,6 +171,8 @@ public:
         			break;
         	}
         }
+
+		setSound(sound_outputs["sheep"], SmartDashboard::GetBoolean("constant sheep", false));
 
         if(copilot->ButtonState(F310Buttons::Start)){
         	wing_fold->Set(WING_FOLD_SPEED);
