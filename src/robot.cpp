@@ -151,110 +151,110 @@ public:
 
 	void TeleopPeriodic()
 	{
-        float x = pilot->LeftX();
-        float y = -pilot->LeftY();
-        float rot = pilot->RightX();
+		float x = pilot->LeftX();
+		float y = -pilot->LeftY();
+		float rot = pilot->RightX();
 
-        drive->MecanumDrive_Cartesian(x/2,y/2,rot/2);
+		drive->MecanumDrive_Cartesian(x/2,y/2,rot/2);
 
-        for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
-        	setSound(it->second, false);
-        }
-        for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
-        	bool pressed = pilot->ButtonState(c->first);
-        	auto out = (DigitalOutput*)c->second->GetSelected();
-        	if (out){
-        		setSound(out, pressed);
-        		// Ensure that this sound is triggered if *any* buttons corresponding
-        		// to this sound are pressed. Without this, if buttons that are
-        		// checked later are not pressed and correspond to the same sound,
-        		// the sound will not be played.
-        		if (pressed)
-        			break;
-        	}
-        }
+		for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
+			setSound(it->second, false);
+		}
+		for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
+			bool pressed = pilot->ButtonState(c->first);
+			auto out = (DigitalOutput*)c->second->GetSelected();
+			if (out){
+				setSound(out, pressed);
+				// Ensure that this sound is triggered if *any* buttons corresponding
+				// to this sound are pressed. Without this, if buttons that are
+				// checked later are not pressed and correspond to the same sound,
+				// the sound will not be played.
+				if (pressed)
+					break;
+			}
+		}
 
 		setSound(sound_outputs["sheep"], SmartDashboard::GetBoolean("constant sheep", false));
 
-        if(copilot->ButtonState(GamepadF310::BUTTON_START)){
-        	wing_fold->Set(WING_FOLD_SPEED);
-        } else if(copilot->ButtonState(GamepadF310::BUTTON_BACK)) {
-        	wing_fold->Set( -WING_FOLD_SPEED );
-        } else {
-        	wing_fold->Set(0.0);
-        }
+		if(copilot->ButtonState(GamepadF310::BUTTON_START)){
+			wing_fold->Set(WING_FOLD_SPEED);
+		} else if(copilot->ButtonState(GamepadF310::BUTTON_BACK)) {
+			wing_fold->Set( -WING_FOLD_SPEED );
+		} else {
+			wing_fold->Set(0.0);
+		}
 
 
-        wing_speed = clamp<float>(
-        		wing_speed + (WING_FLAP_ACCEL * (copilot->ButtonState(GamepadF310::BUTTON_B) ? 1 : -1)),
-        		0.0,
+		wing_speed = clamp<float>(
+				wing_speed + (WING_FLAP_ACCEL * (copilot->ButtonState(GamepadF310::BUTTON_B) ? 1 : -1)),
+				0.0,
 				WING_FLAP_SPEED
 		);
-        wing_flap->Set(wing_speed);
+		wing_flap->Set(wing_speed);
 
-        // left trigger/button control head and jaw
-        // right trigger/button control jaw only
+		// left trigger/button control head and jaw
+		// right trigger/button control jaw only
 
-        bool left_down = copilot->LeftTrigger() > 0.5;
-        bool left_up = copilot->ButtonState(GamepadF310::BUTTON_LEFT_BUMPER);
-        bool right_down = copilot->RightTrigger() >= 0.5f;
-        bool right_up = copilot->ButtonState(GamepadF310::BUTTON_RIGHT_BUMPER);
+		bool left_down = copilot->LeftTrigger() > 0.5;
+		bool left_up = copilot->ButtonState(GamepadF310::BUTTON_LEFT_BUMPER);
+		bool right_down = copilot->RightTrigger() >= 0.5f;
+		bool right_up = copilot->ButtonState(GamepadF310::BUTTON_RIGHT_BUMPER);
 
-        if ((int)left_down + (int)left_up + (int)right_down + (int)right_up != 1) {
-        	// either no buttons are pressed or multiple,
-        	// conflicting buttons are pressed
-        	jaw->Set(0);
-        	head->Set(0);
-        } else if (left_down) {
-        	jaw->Set(0.2);
-        	head->Set(-0.3);
-        } else if (left_up) {
-        	jaw->Set(-0.4);
-        	head->Set(0.5);
-        } else if (right_down){
-        	jaw->Set(0.4);
-        } else if (right_up){
-        	jaw->Set(-0.4);
-        }
+		if ((int)left_down + (int)left_up + (int)right_down + (int)right_up != 1) {
+			// either no buttons are pressed or multiple,
+			// conflicting buttons are pressed
+			jaw->Set(0);
+			head->Set(0);
+		} else if (left_down) {
+			jaw->Set(0.2);
+			head->Set(-0.3);
+		} else if (left_up) {
+			jaw->Set(-0.4);
+			head->Set(0.5);
+		} else if (right_down){
+			jaw->Set(0.4);
+		} else if (right_up){
+			jaw->Set(-0.4);
+		}
 
-        if (copilot->ButtonState(GamepadF310::BUTTON_A)) {
-        	eye_angle = ((1 - copilot->LeftX()) * 60) + 50;
-        }
-        eye->SetAngle(eye_angle);
+		if (copilot->ButtonState(GamepadF310::BUTTON_A)) {
+			eye_angle = ((1 - copilot->LeftX()) * 60) + 50;
+		}
+		eye->SetAngle(eye_angle);
 
-        if (copilot->ButtonState(GamepadF310::BUTTON_X)) {
-        	// make smoke
-        	if (smoke_make_timer->Get() - smoke_fire_timer->Get() < MAX_EXCESS_SMOKE_TIME) {
-        		smoke_machine->Set(true);
-        		SmartDashboard::PutString("smoke machine", "active");
-        	} else {
-        		smoke_machine->Set(false);
-        		SmartDashboard::PutString("smoke machine", "maximum");
-        	}
-        	smoke_make_timer->Start();
-        }
-        else {
-        	smoke_machine->Set(false);
-        	SmartDashboard::PutString("smoke machine", "inactive");
-        	smoke_make_timer->Stop();
-        }
+		if (copilot->ButtonState(GamepadF310::BUTTON_X)) {
+			// make smoke
+			if (smoke_make_timer->Get() - smoke_fire_timer->Get() < MAX_EXCESS_SMOKE_TIME) {
+				smoke_machine->Set(true);
+				SmartDashboard::PutString("smoke machine", "active");
+			} else {
+				smoke_machine->Set(false);
+				SmartDashboard::PutString("smoke machine", "maximum");
+			}
+			smoke_make_timer->Start();
+		}
+		else {
+			smoke_machine->Set(false);
+			SmartDashboard::PutString("smoke machine", "inactive");
+			smoke_make_timer->Stop();
+		}
 
-        if (copilot->ButtonState(GamepadF310::BUTTON_Y)) {
-        	// shoot smoke
-        	smoke_cannon->Set(SMOKE_CANNON_SPEED);
+		if (copilot->ButtonState(GamepadF310::BUTTON_Y)) {
+			// shoot smoke
+			smoke_cannon->Set(SMOKE_CANNON_SPEED);
 			if (smoke_make_timer->Get() > smoke_fire_timer->Get()){
 				//measure how long we've fired smoke, so we know if it's ok to make more
 				smoke_fire_timer->Start();
-	        	SmartDashboard::PutString("smoke cannon", "active");
+				SmartDashboard::PutString("smoke cannon", "active");
 			} else {
 				smoke_fire_timer->Stop();
-	        	SmartDashboard::PutString("smoke cannon", "stopped");
+				SmartDashboard::PutString("smoke cannon", "stopped");
 			}
 
-        } else {
-            smoke_cannon->Set(0);
-        	SmartDashboard::PutString("smoke cannon", "inactive");
-        }
+		} else {
+			smoke_cannon->Set(0);
+			SmartDashboard::PutString("smoke cannon", "inactive");
+		}
 
 		//if both timers are the same, we can set them both to zero to ensure we don't overflow them or something
 		if (smoke_make_timer->Get() == smoke_fire_timer->Get()){
