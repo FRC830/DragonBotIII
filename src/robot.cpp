@@ -139,10 +139,13 @@ public:
 		for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
 			setSound(it->second, false);
 		}
+		CommonPeriodic();
 	}
 
 	void AutonomousInit() {}
-	void AutonomousPeriodic() {}
+	void AutonomousPeriodic() {
+		setSound(sound_outputs["sheep"], 1);
+	}
 
 	void TeleopInit()
 	{
@@ -156,25 +159,6 @@ public:
 		float rot = pilot->RightX();
 
 		drive->MecanumDrive_Cartesian(x/2,y/2,rot/2);
-
-		for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
-			setSound(it->second, false);
-		}
-		for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
-			bool pressed = pilot->ButtonState(c->first);
-			auto out = (DigitalOutput*)c->second->GetSelected();
-			if (out){
-				setSound(out, pressed);
-				// Ensure that this sound is triggered if *any* buttons corresponding
-				// to this sound are pressed. Without this, if buttons that are
-				// checked later are not pressed and correspond to the same sound,
-				// the sound will not be played.
-				if (pressed)
-					break;
-			}
-		}
-
-		setSound(sound_outputs["sheep"], SmartDashboard::GetBoolean("constant sheep", false));
 
 		if(copilot->ButtonState(GamepadF310::BUTTON_START)){
 			wing_fold->Set(WING_FOLD_SPEED);
@@ -262,11 +246,31 @@ public:
 			smoke_fire_timer->Reset();
 		}
 
+		CommonPeriodic();
 	}
 
 	void TestInit() {}
 
 	void TestPeriodic() {}
+
+	void CommonPeriodic() {
+		for (auto it = sound_outputs.begin(); it != sound_outputs.end(); ++it) {
+			setSound(it->second, false);
+		}
+		for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
+			bool pressed = pilot->ButtonState(c->first);
+			auto out = (DigitalOutput*)c->second->GetSelected();
+			if (out){
+				setSound(out, pressed);
+				// Ensure that this sound is triggered if *any* buttons corresponding
+				// to this sound are pressed. Without this, if buttons that are
+				// checked later are not pressed and correspond to the same sound,
+				// the sound will not be played.
+				if (pressed)
+					break;
+			}
+		}
+	}
 };
 
 START_ROBOT_CLASS(Robot)
