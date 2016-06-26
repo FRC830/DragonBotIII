@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 include(lib830/cmake/frc.cmake)
 set(CMAKE_BUILD_TYPE Debug)
+set(FRC_PREFER_TARGET static)
 
 project(DragonBotIII)
 add_subdirectory(lib830)
