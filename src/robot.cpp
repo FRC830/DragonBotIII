@@ -44,7 +44,7 @@ private:
 	static const int WING_FOLD_PWM = 9;
 
 	static const int SMOKE_MACHINE_DIO = 9;
-	static const int MAX_EXCESS_SMOKE_TIME = 2;
+	static const int MAX_EXCESS_SMOKE_TIME = 5;
 	static constexpr float SMOKE_CANNON_SPEED = 0.4f;
 	Victor *smoke_cannon;
 	DigitalOutput *smoke_machine;
