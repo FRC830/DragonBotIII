@@ -50,6 +50,7 @@ private:
 	DigitalOutput *smoke_machine;
 	Timer *smoke_make_timer;
 	Timer *smoke_fire_timer;
+	Timer *rumble_timer;
 
 	static constexpr float WING_FOLD_SPEED = 0.8;
 	static constexpr float WING_FLAP_SPEED = 0.4;
@@ -112,6 +113,8 @@ public:
 		smoke_make_timer = new Timer();
 		smoke_fire_timer = new Timer();
 
+		rumble_timer = new Timer();
+
 		jaw = new Victor(JAW_MOTOR_PWM);
 		head = new Victor(HEAD_MOTOR_PWM);
 		wing_flap = new Victor(WING_FLAP_PWM);
@@ -132,6 +135,8 @@ public:
 		smoke_fire_timer->Stop();
 		smoke_make_timer->Reset();
 		smoke_fire_timer->Reset();
+		pilot->RumbleRight(0);
+		pilot->RumbleLeft(0);		
 	}
 
 	void DisabledPeriodic()
@@ -150,6 +155,7 @@ public:
 	void TeleopInit()
 	{
 		SmartDashboard::PutBoolean("constant sheep", false);
+		rumble_timer->Start();
 	}
 
 	void TeleopPeriodic()
@@ -245,6 +251,16 @@ public:
 			smoke_make_timer->Reset();
 			smoke_fire_timer->Reset();
 		}
+
+		if (pilot->ButtonState(GamepadF310::BUTTON_B)){
+			pilot->RumbleLeft(1.0);
+			pilot->RumbleRight(1.0);
+		}
+		else {
+			pilot->RumbleLeft(0.0);
+			pilot->RumbleRight(0.0);
+		}
+
 
 		CommonPeriodic();
 	}
