@@ -58,7 +58,7 @@ private:
 	float wing_speed;
 
 	std::map<std::string, DigitalOutput*> sound_outputs;
-	std::map<int /* button ID */, SendableChooser*> sound_choosers;
+	std::map<int /* button ID */, SendableChooser<DigitalOutput*>*> sound_choosers;
 
 	RobotDrive *drive;
 
@@ -93,11 +93,11 @@ public:
 			sound_outputs[SOUNDS[i].name] = new DigitalOutput(SOUNDS[i].pin);
 		}
 
-		sound_choosers[GamepadF310::BUTTON_A] = new SendableChooser();
-		sound_choosers[GamepadF310::BUTTON_B] = new SendableChooser();
+		sound_choosers[GamepadF310::BUTTON_A] = new SendableChooser<DigitalOutput*>();
+		sound_choosers[GamepadF310::BUTTON_B] = new SendableChooser<DigitalOutput*>();
 
 		for (auto it = sound_choosers.begin(); it != sound_choosers.end(); ++it) {
-			SendableChooser *c = it->second;
+			SendableChooser<DigitalOutput*> *c = it->second;
 			c->AddDefault(" none", NULL);
 			for (auto out = sound_outputs.begin(); out != sound_outputs.end(); ++out) {
 				c->AddObject(out->first.c_str(), out->second);
@@ -275,7 +275,7 @@ public:
 		}
 		for (auto c = sound_choosers.begin(); c != sound_choosers.end(); ++c) {
 			bool pressed = pilot->ButtonState(c->first);
-			auto out = (DigitalOutput*)c->second->GetSelected();
+			auto out = c->second->GetSelected();
 			if (out){
 				setSound(out, pressed);
 				// Ensure that this sound is triggered if *any* buttons corresponding
