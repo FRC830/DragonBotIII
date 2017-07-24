@@ -43,6 +43,7 @@ private:
 	static const int WING_FLAP_PWM = 8;
 	static const int WING_FOLD_PWM = 9;
 
+	static const int EYE_BLINKING = 5; //subject to change
 	static const int SMOKE_MACHINE_DIO = 9;
 	static const int MAX_EXCESS_SMOKE_TIME = 5;
 	static constexpr float SMOKE_CANNON_SPEED = 0.4f;
@@ -72,6 +73,7 @@ private:
 
 	float eye_angle;
 	Servo *eye;
+	DigitalOutput *eye_color;
 
 public:
 	void RobotInit()
@@ -123,6 +125,8 @@ public:
 
 		eye = new Servo(EYE_PWM);
 		eye_angle = 0;
+		eye_color = new DigitalOutput(EYE_BLINKING);
+
 	}
 
 	void setSound(DigitalOutput *out, bool state) {
@@ -158,6 +162,8 @@ public:
 		rumble_timer->Start();
 	}
 
+	bool wasPressed = false;
+	bool toggle = false;
 	void TeleopPeriodic()
 	{
 		float x = pilot->LeftX();
@@ -260,7 +266,12 @@ public:
 			pilot->RumbleLeft(0.0);
 			pilot->RumbleRight(0.0);
 		}
-
+		bool isPressed = copilot-> ButtonState(GamepadF310::BUTTON_LEFT_STICK);
+		if (isPressed == !wasPressed && isPressed){
+			toggle = !toggle;
+		} else
+		wasPressed = isPressed;
+		eye_color -> Set(toggle);
 
 		CommonPeriodic();
 	}
