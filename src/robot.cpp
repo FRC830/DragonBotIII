@@ -43,8 +43,8 @@ private:
 	static const int WING_FLAP_PWM = 8;
 	static const int WING_FOLD_PWM = 9;
 
-	static const int EYE_BLINKING = 5; //subject to change
-	static const int SMOKE_MACHINE_DIO = 9;
+	static const int EYE_BLINKING = 9; //subject to change
+	static const int SMOKE_MACHINE_DIO = 0;// was 9
 	static const int MAX_EXCESS_SMOKE_TIME = 5;
 	static constexpr float SMOKE_CANNON_SPEED = 0.4f;
 	Victor *smoke_cannon;
@@ -52,6 +52,7 @@ private:
 	Timer *smoke_make_timer;
 	Timer *smoke_fire_timer;
 	Timer *rumble_timer;
+	Timer *eye_blink_timer;
 
 	static constexpr float WING_FOLD_SPEED = 0.8;
 	static constexpr float WING_FLAP_SPEED = 0.4;
@@ -114,6 +115,7 @@ public:
 		smoke_machine = new DigitalOutput(SMOKE_MACHINE_DIO);
 		smoke_make_timer = new Timer();
 		smoke_fire_timer = new Timer();
+		eye_blink_timer = new Timer();
 
 		rumble_timer = new Timer();
 
@@ -160,6 +162,7 @@ public:
 	{
 		SmartDashboard::PutBoolean("constant sheep", false);
 		rumble_timer->Start();
+		eye_blink_timer->Start();
 	}
 
 	bool wasPressed = false;
@@ -269,10 +272,19 @@ public:
 		bool isPressed = copilot-> ButtonState(GamepadF310::BUTTON_LEFT_STICK);
 		if (isPressed == !wasPressed && isPressed){
 			toggle = !toggle;
-		} else
+		}
+
 		wasPressed = isPressed;
 		eye_color -> Set(toggle);
 
+		int eyeBlinkTime = eye_blink_timer->Get();
+		if (copilot->ButtonState(GamepadF310::BUTTON_RIGHT_STICK)){
+			if ((eyeBlinkTime%2) == 0){
+				eye_color -> Set(0);
+			}else{
+				eye_color -> Set(1);
+			}
+		}
 		CommonPeriodic();
 	}
 
