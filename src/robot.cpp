@@ -43,8 +43,8 @@ private:
 	static const int WING_FLAP_PWM = 8;
 	static const int WING_FOLD_PWM = 9;
 
-	static const int EYE_BLINKING = 9; //subject to change
-	static const int SMOKE_MACHINE_DIO = 0;// was 9
+	static const int EYE_BLINKING = 0;
+	static const int SMOKE_MACHINE_DIO = 9;
 	static const int MAX_EXCESS_SMOKE_TIME = 5;
 	static constexpr float SMOKE_CANNON_SPEED = 0.4f;
 	Victor *smoke_cannon;
@@ -167,6 +167,28 @@ public:
 
 	bool wasPressed = false;
 	bool toggle = false;
+
+	enum Part {
+		HEAD, JAW
+	};
+
+	float previousJawSpeed = 0;
+	float previousHeadSpeed = 0;
+	void PartAccel(float endSpeed, Victor *jaw, Part part) {
+		float previousSpeed = 0;
+		if(part == HEAD) {
+			previousSpeed = previousHeadSpeed;
+		}
+		else {
+			previousSpeed = previousJawSpeed;
+		}
+
+		float currentJawSpeed = accel(previousSpeed, endSpeed, 5);
+		jaw->Set(currentJawSpeed);
+		previousSpeed = currentJawSpeed;
+		SmartDashboard::PutNumber("previous Jaw Speed", previousSpeed);
+	}
+
 	void TeleopPeriodic()
 	{
 		float x = pilot->LeftX();
@@ -201,11 +223,11 @@ public:
 
 		if ((int)left_down + (int)left_up + (int)right_down + (int)right_up != 1) {
 			// either no buttons are pressed or multiple,
-			// conflicting buttons are pressed
+			// conflicting button\[]s are pressed
 			jaw->Set(0);
 			head->Set(0);
 		} else if (left_down) {
-			jaw->Set(0.2);
+			PartAccel(0.2, jaw, JAW);
 			head->Set(-0.3);
 		} else if (left_up) {
 			jaw->Set(-0.4);
